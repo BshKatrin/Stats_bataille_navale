@@ -53,7 +53,6 @@ class Grille:
             #     return False
 
             # on verifie si il y a de la place pour le bateau
-            # print(self.n - ligne)
             if self.n - ligne < taille_bat:
                 return False
 
@@ -122,7 +121,7 @@ class Grille:
         # Dessiner la grille en arrière
         self.ax.grid()
 
-        # Dessiner les bateux (nombres associés) dans la cases
+        # Dessiner les bateux (nombres associés) dans les cases
         self._affiche_bateaux()
 
         plt.title("Bataille bateau. Grille")
