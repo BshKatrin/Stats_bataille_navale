@@ -8,7 +8,7 @@ from constants import *
 
 class Grille:
     def __init__(self, n: int):
-        self.n: int = n  # taille d'une cote
+        self.n: int = n  # taille d'un cote
         self.grille = np.zeros((n, n), dtype=np.int8)
 
     def peut_placer(self, bateau: int, position: tuple[int, int], direction: int) -> bool:
@@ -29,12 +29,8 @@ class Grille:
         taille_bat = BAT_CASES[bateau]  # taille du bateau
 
         if direction == HOR:
-            # cas tout a droite
-            # Pourquoi nécessaire? 2ième if va le checker normalement
-            # if col == self.n - 1:
-            #     return False
 
-            # on verifie si il y a de la place pour le bateau
+            # on verifie s'il y a de la place pour le bateau
             if self.n - col < taille_bat:
                 return False
 
@@ -47,11 +43,6 @@ class Grille:
 
         if direction == VER:
 
-            # cas tout en bas
-            # Pourquoi nécessaire? 2ième if va le checker normalement
-            # if ligne == self.n-1:
-            #     return False
-
             # on verifie si il y a de la place pour le bateau
             if self.n - ligne < taille_bat:
                 return False
@@ -63,9 +54,8 @@ class Grille:
 
             return True
 
-    # Pas nécessaire de renvoyer la grille, le tableau est dans la classe
     def place(self, bateau: int, position: tuple[int, int], direction: int) -> None:
-        """Place la bateau sur la grille à la position et en diretion données. Attention : le placement doit être possible.
+        """Place la bateau sur la grille à la position et en direction données. Attention : le placement doit être possible.
 
         Args:
             bateau: Type du bateau (constante).
@@ -97,7 +87,6 @@ class Grille:
             direction = choice([HOR, VER])
 
             if self.peut_placer(bateau, position, direction):
-                # self.grille = self.place(bateau, position, direction)  # Pas nécesaire
                 self.place(bateau, position, direction)
                 return
 
@@ -105,7 +94,7 @@ class Grille:
         """Affiche la grille dans une fenêtre séparée."""
 
         self.fig, self.ax = plt.subplots(figsize=(6, 6))
-        rgb = (222, 243, 246)  # bleu claire
+        rgb = (222, 243, 246)  # bleu clair
         image_tab = [[rgb for _ in range(self.n+1)] for _ in range(self.n+1)]
 
         self.ax.imshow(image_tab)
@@ -137,7 +126,7 @@ class Grille:
         """Vérifie l'égalité entre deux grilles. L'égalité entre deux grilles est considérés vérifiée ssi elles ont:
             - la même taille 
             - les mêmes cases vides
-            - les mêmes bateux sur les mêmes cases
+            - les mêmes bateaux sur les mêmes cases
 
         Args:
             grilleA: La grille avec laquelle il faut vérifier l'égalité.  
@@ -158,13 +147,13 @@ class Grille:
 
     @ classmethod
     def genere_grille(cls, n: int) -> Self:
-        """Créer une nouvelle grille de la taille n remplie de 5 bateux (un de chaque type).
+        """Créer une nouvelle grille de la taille n remplie des 5 bateaux (un de chaque type).
 
         Args:
             n: Taille de la nouvelle grille.
 
         Returns:
-            Une nouvelle instance de la classe Grille dont le tableau 'grille' est rempli des bateux. 
+            Une nouvelle instance de la classe Grille dont le tableau 'grille' est rempli des bateaux. 
         """
 
         nouv_grille = Grille(n)
