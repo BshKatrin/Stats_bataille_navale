@@ -36,13 +36,12 @@ class Grille:
 
             # on verifie si les cases sont libres
             for i in range(col, col + taille_bat):
-                if self.grille[i][col] != VIDE:
+                if self.grille[ligne][i] != VIDE:
                     return False
 
             return True
 
         if direction == VER:
-
             # on verifie si il y a de la place pour le bateau
             if self.n - ligne < taille_bat:
                 return False
@@ -53,6 +52,8 @@ class Grille:
                     return False
 
             return True
+
+        return False
 
     def place(self, bateau: int, position: tuple[int, int], direction: int) -> None:
         """Place la bateau sur la grille à la position et en direction données. Attention : le placement doit être possible.
@@ -85,7 +86,6 @@ class Grille:
         while True:
             position = (randint(0, self.n-1), randint(0, self.n-1))
             direction = choice([HOR, VER])
-
             if self.peut_placer(bateau, position, direction):
                 self.place(bateau, position, direction)
                 return
@@ -145,7 +145,7 @@ class Grille:
                     return False
         return True
 
-    @ classmethod
+    @classmethod
     def genere_grille(cls, n: int) -> Self:
         """Créer une nouvelle grille de la taille n remplie des 5 bateaux (un de chaque type).
 
