@@ -161,9 +161,16 @@ class Grille:
             nouv_grille.place_alea(bat_type)
         return nouv_grille
 
+    def calc_nb_placements_bateau(self, bateau: int) -> int:
+        taille_bat = BAT_CASES[bateau]
+        cases_possibles = self.n - taille_bat + 1
+        return self.n * cases_possibles * 2
+
 
 if __name__ == "__main__":
     grille = Grille.genere_grille(10)
     for i in range(grille.n):
         print(grille.grille[i])
-    grille.affiche()
+    for bat, nb_cases in BAT_CASES.items():
+        print(bat, nb_cases, grille.calc_nb_placements_bateau(bat))
+    # grille.affiche()
