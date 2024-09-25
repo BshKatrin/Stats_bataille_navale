@@ -1,123 +1,319 @@
-import numpy
+import numpy as np
+import matplotlib.pyplot as plt
+from random import randint, choice
+from typing import Self, Dict
+from time import time
+from constants import *
 
-from random import randint
-from bateau import BAT_CASES
 
 class Grille:
-    def __init__(self, n:int)->None:
-        self.n: int = n
-        self.grille = numpy.zeros((n,n), dtype = numpy.int8)
-    
+    def __init__(self, n: int):
+        self.n: int = n  # taille d'un cote
+        self.grille = np.zeros((n, n), dtype=np.int8)
 
-    def peut_placer(self, bateau: int, position: tuple, direction: int)-> bool:
-        """
-        Renvoie True si peut placer le bateau sur la grille, False sinon.
+        # Dict qui sert uniquement pour optimiser la fonction d'égalité entre 2 grilles si pour la fonction eq_alea
+        # Associe au triplet (ligne, colonne, direction) un type du bateau
+        # (ligne, colonne) indique le début du bateau
+        self.bateaux_places: Dict[(int, int, int), int] = dict()
 
-        Args:
-            bateau: [1, 5]
-            position: tuple (ligne, col)
-                la position concerne la partie la plus a gauche ou la partie la plus en haut du bateau
-            direction: 1 horizontale, 2 verticale
-        """
-
-        ligne, col = position 
-        taille_bat = BAT_CASES[bateau]   
-
-        #cas horizontale
-        if direction == 1:
-
-            #cas tout a droite
-            if ligne == self.n - 1: 
-                return False
-
-            #on verifie si il y a de la place pour le bateau
-            if self.n - col < taille_bat:
-                return False
-
-            #on verifie si les cases sont libres
-            for i in range(col, col + taille_bat):
-                if self.grille[ligne][i] != 0:
-                    return False
-            
-            return True
-
-
-        #cas verticale
-        if direction == 2:
-
-            #cas tout en bas
-            if col == self.n-1: 
-                return False
-
-            #on verifie si il y a de la place pour le bateau
-            if self.n - ligne < BAT_CASES[bateau]:
-                return False
-            
-            #on verifie si les cases sont libres
-            for i in range(ligne, ligne + taille_bat):
-                if self.grille[i][col] != 0:
-                    return False
-            
-            return True
-
-
-    def place(self, bateau: int, position: tuple, direction: int):
-        """
-        Renvoie la grille avec le bateau placé dessus.
+    def peut_placer(self, bateau: int, position: tuple[int, int], direction: int) -> bool:
+        """Vérifie s'il est possible de placer le bateau à la position dans la direction donnée sur la grille.
 
         Args:
-            bateau: [1, 5]
-            position: tuple (ligne, col)
-                la position concerne la partie la plus a gauche ou la partie la plus en haut du bateau
-            direction: 1 horizontale, 2 verticale
+            bateau: Type du bateau (constante).
+            position: (ligne, colonne) indique la position sur la grille à laquelle placer la bateau.
+                (0, 0) représente le coin supérieur gauche.
+            direction: Direction (constante) dans laquelle placer le bateau.
+
+        Returns:
+            bool: True si le placement est possible, False sinon.
+
         """
 
         ligne, col = position
-        taille_bat = BAT_CASES[bateau] 
+        taille_bat = BAT_CASES[bateau]  # taille du bateau
 
-        #cas horizontale
-        if direction == 1:
+        if direction == HOR:
+
+            # on verifie s'il y a de la place pour le bateau
+            if self.n - col < taille_bat:
+                return False
+
+            # on verifie si les cases sont libres
+            for i in range(col, col + taille_bat):
+                if self.grille[ligne][i] != VIDE:
+                    return False
+
+            return True
+
+        if direction == VER:
+            # on verifie si il y a de la place pour le bateau
+            if self.n - ligne < taille_bat:
+                return False
+
+            # on verifie si les cases sont libres
+            for i in range(ligne, ligne + taille_bat):
+                if self.grille[i][col] != VIDE:
+                    return False
+
+            return True
+
+        return False
+
+    def place(self, bateau: int, position: tuple[int, int], direction: int) -> None:
+        """Place la bateau sur la grille à la position et en direction données. Attention : le placement doit être possible.
+
+        Args:
+            bateau: Type du bateau (constante).
+            position: (ligne, colonne) indique la position sur la grille à laquelle placer la bateau.
+                (0, 0) représente le coin supérieur gauche.
+            direction: Direction (constante) dans laquelle placer le bateau.
+        """
+
+        ligne, col = position
+        taille_bat = BAT_CASES[bateau]
+
+        if direction == HOR:
             for i in range(col, col + taille_bat):
                 self.grille[ligne][i] = bateau
 
-        #cas verticale
-        if direction == 2:
+        if direction == VER:
             for i in range(ligne, ligne + taille_bat):
                 self.grille[i][col] = bateau
-        
-        return self.grille
 
+        self.bateaux_places[(ligne, col, direction)] = bateau
 
-    def place_alea(self, bateau: int)-> None:
-        """Place le bateau aléatoirement dans la grille."""
-    
+    def place_alea(self, bateau: int) -> None:
+        """Place le bateau aléatoirement dans la grille.
+
+        Args:
+            bateau: Type du bateau (constante).
+        """
+
         while True:
-            position = (randint(0, self.n), randint(0, self.n))
-            direction = randint(1,2)
+            position = (randint(0, self.n-1), randint(0, self.n-1))
+            direction = choice([HOR, VER])
+            if self.peut_placer(bateau, position, direction):
+                self.place(bateau, position, direction)
+                return
 
-            if self.peut_placer(bateau, position, direction) == True:
-                self.grille = self.place(bateau, position, direction)
-                break
-        
+    def place_alea_list(self, bateaux: list) -> None:
+        """Place les bateaux aléatoirement dans la grille.
+
+        Args:
+            bateaux: Liste de types de bateau (liste de constantes).
+        """
+
+        for bat in bateaux:
+            self.place_alea(bat)
         return
+
+    def affiche(self) -> None:
+        """Affiche la grille dans une fenêtre séparée."""
+
+        self.fig, self.ax = plt.subplots(figsize=(6, 6))
+        rgb = (222, 243, 246)  # bleu clair
+        image_tab = [[rgb for _ in range(self.n+1)] for _ in range(self.n+1)]
+
+        self.ax.imshow(image_tab)
+
+        # Valeurs des axes x, y
+        self.ax.set_xticks(np.arange(0, self.n))
+        self.ax.set_yticks(np.arange(0, self.n))
+
+        # Limites des axes
+        self.ax.set_xlim(0, self.n)
+        self.ax.set_ylim(self.n, 0)
+
+        # Dessiner la grille en arrière
+        self.ax.grid()
+
+        # Dessiner les bateux (nombres associés) dans les cases
+        self._affiche_bateaux()
+
+        plt.title("Bataille bateau. Grille")
+        plt.show()
+
+    def _affiche_bateaux(self) -> None:
+        """Dessine les bateaux (les numéros associés) sur la grille de matplotlib."""
+
+        for (col, ligne), label in np.ndenumerate(self.grille):
+            if label != VIDE:
+                self.ax.text(ligne+0.5, col+0.5, label, ha='center', va='center')
+
+    def eq(self, grilleA: Self) -> bool:
+        """Vérifie l'égalité entre deux grilles. L'égalité entre deux grilles est considérés vérifiée ssi elles ont:
+            - la même taille 
+            - les mêmes cases vides
+            - les mêmes bateaux sur les mêmes cases
+
+        Args:
+            grilleA: La grille avec laquelle il faut vérifier l'égalité.
+
+        Returns:
+            Un booléan True ssi les grilles sont égales. Sinon, False.
+        """
+
+        # Meme classe
+        if (grilleA.__class__ != self.__class__):
+            return False
+        # Vérifier la taille des grilles
+        if (self.n != grilleA.n):
+            return False
+        # Vérifier que toutes les cases ont les mêmes valeurs
+        for i in range(grilleA.n):
+            for j in range(grilleA.n):
+                if self.grille[i][j] != grilleA.grille[i][j]:
+                    return False
+        return True
+
+    def _eq_dict_bateaux(self, grilleA: Self) -> bool:
+        """Vérifie l'égalité entre deux grilles. Utiliser uniquement pour la fonction eq_alea (pour optimisation).  
+            Hypothèse:  
+                - Les cases qui ne sont pas stockées dans le dictionnaire self.bateaux_places sont VIDES.
+
+        Args:
+            grilleA: La grille avec laquelle il faut vérifier l'égalité.  
+
+        Returns:
+            Un booléan True ssi les grilles sont égales. Sinon, False.
+        """
+
+        if (grilleA.__class__ != self.__class__):
+            return False
+        if (self.n != grilleA.n):
+            return False
+        return self.bateaux_places == grilleA.bateaux_places
+
+    @classmethod
+    def genere_grille(cls, n: int) -> Self:
+        """Crée une nouvelle grille de la taille n remplie des 5 bateaux (un de chaque type).
+
+        Args:
+            n: Taille de la nouvelle grille.
+
+        Returns:
+            Une nouvelle instance de la classe Grille dont le tableau 'grille' est rempli des bateaux. 
+        """
+
+        nouv_grille = Grille(n)
+        for bat_type in BAT_CASES.keys():
+            nouv_grille.place_alea(bat_type)
+        return nouv_grille
+
+    def retirer_bateau(self, bateau: int, position: tuple[int, int], direction: int) -> None:
+        """Retire le bateau de la grille.
+
+        Args:
+            bateau: Type du bateau (constante).
+            position: (ligne, colonne) indique la position sur la grille à laquelle placer la bateau.
+                (0, 0) représente le coin supérieur gauche.
+            direction: Direction (constante) dans laquelle placer le bateau.
+        """
+
+        ligne, col = position
+        taille_bat = BAT_CASES[bateau]
+
+        if direction == HOR:
+            for i in range(col, col + taille_bat):
+                self.grille[ligne][i] = VIDE
+
+        if direction == VER:
+            for i in range(ligne, ligne + taille_bat):
+                self.grille[i][col] = VIDE
+
+    def calc_nb_placements_bateau(self, bateau: int) -> int:
+        """Calcule le nombre de placements possibles du bateau sur la grille vide.
+
+        Args:
+            bateau: Type du bateau (constante).
+
+        Returns:
+            Nombre de placements possibles du bateau sur la grille vide.
+        """
+
+        taille_bat = BAT_CASES[bateau]
+        cases_possibles = self.n - taille_bat + 1
+        return self.n * cases_possibles * 2
+
+    def calc_nb_placements_liste_bateaux(self, bateaux: list[int], count=0) -> int:
+        """Calcule le nombre de configurations possibles à partir de la grille vide.  
+            Les bateaux ne peuvent pas se superposer.
+
+        Args:
+            bateaux: Une liste des bateaux à placer sur la grille.
+            count: Un compteur des configurations. Default = 0.
+
+        Returns:
+            Le nombre des configurations possibles des bateaux à partir de la grille vide.
+        """
+
+        if (len(bateaux) == 0):
+            return 1  # configuration grille vide
+
+        bateau = bateaux[0]
+
+        # On est au dernier bateau. Il suffit juste de calculer tous les placements possibles
+        if (len(bateaux) == 1):
+            # Compteur temporaire pour compter le nombre de placements d'un bateau
+            count_tmp = 0
+            for i in range(self.n):
+                for j in range(self.n):
+                    # Horizontale
+                    if self.peut_placer(bateau, (i, j), HOR):
+                        count_tmp += 1
+                    # Verticale
+                    if self.peut_placer(bateau, (i, j), VER):
+                        count_tmp += 1
+            return count + count_tmp
+
+        # Placer un bateau
+        for i in range(self.n):
+            for j in range(self.n):
+                # Horizontale
+                if self.peut_placer(bateau, (i, j), HOR):
+                    # Placer le bateau
+                    self.place(bateau, (i, j), HOR)
+                    # Passer aux bateaux restants
+                    count = self.calc_nb_placements_liste_bateaux(bateaux[1:], count)
+                    # Retirer le bateau restants
+                    self.retirer_bateau(bateau, (i, j), HOR)
+
+                # Verticale
+                if self.peut_placer(bateau, (i, j), VER):
+                    # Placer le bateau
+                    self.place(bateau, (i, j), VER)
+                    # Passer aux bateaux suivants
+                    count = self.calc_nb_placements_liste_bateaux(bateaux[1:], count)
+                    # Retirer le bateau placé
+                    self.retirer_bateau(bateau, (i, j), VER)
+        return count
+        # Retirer le bateau
+
+    def generer_meme_grille(self) -> int:
+        """Génére aléatoirement des grilles avec 5 bateaux (un de chaque type) la grille de l'instance courante (self.grille).  
+            Hypothèse: self.grille ne contient que la liste des 5 bateaux, un de chaque type.
+
+        Returns:
+            Le nombre de tirages de grilles aléatoires jusqu'à obtenir la grille égale à self.grille
+        """
+
+        # On tire au moins une fois
+        count = 1
+        # Générer la grille de meme taille que l'instance courante et remplie de 5 bateaux
+        grilleB = self.genere_grille(self.n)
+
+        while (self._eq_dict_bateaux(grilleB) == False):
+            count += 1
+            grilleB = self.genere_grille(self.n)
+        return count
 
 
 if __name__ == "__main__":
-    g = Grille(10)
-    assert(g.peut_placer(5, (0,0), 1)) == True
-    g.place(5, (0,0), 1)
-    assert(g.peut_placer(5, (0,0), 1)) == False
-    assert(g.peut_placer(5, (0,1), 1)) == False
-    assert(g.peut_placer(5, (0,2), 1)) == True
+    grille = Grille(10)
 
-    g.place_alea(3)
-            
-
-
-                
-
-
-
-
-
-
+    grille.place_alea(PORTE_AVION)
+    grille.place_alea(CROISEUR)
+    grille.place_alea(CONTRE_TORPILLEURS)
+    grille.place_alea(SOUS_MARIN)
+    grille.place_alea(TORPILLEUR)
