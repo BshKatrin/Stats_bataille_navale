@@ -259,36 +259,23 @@ class Grille:
             count_tmp = 0
             for i in range(self.n):
                 for j in range(self.n):
-                    # Horizontale
-                    if self.peut_placer(bateau, (i, j), HOR):
-                        count_tmp += 1
-                    # Verticale
-                    if self.peut_placer(bateau, (i, j), VER):
-                        count_tmp += 1
+                    for dir in {HOR, VER}:
+                        if self.peut_placer(bateau, (i, j), dir):
+                            count_tmp += 1
             return count + count_tmp
 
         # Placer un bateau
         for i in range(self.n):
             for j in range(self.n):
-                # Horizontale
-                if self.peut_placer(bateau, (i, j), HOR):
-                    # Placer le bateau
-                    self.place(bateau, (i, j), HOR)
-                    # Passer aux bateaux restants
-                    count = self.calc_nb_placements_liste_bateaux(bateaux[1:], count)
-                    # Retirer le bateau restants
-                    self.retirer_bateau(bateau, (i, j), HOR)
-
-                # Verticale
-                if self.peut_placer(bateau, (i, j), VER):
-                    # Placer le bateau
-                    self.place(bateau, (i, j), VER)
-                    # Passer aux bateaux suivants
-                    count = self.calc_nb_placements_liste_bateaux(bateaux[1:], count)
-                    # Retirer le bateau placé
-                    self.retirer_bateau(bateau, (i, j), VER)
+                for dir in {HOR, VER}:
+                    if self.peut_placer(bateau, (i, j), dir):
+                        # Placer le bateau
+                        self.place(bateau, (i, j), dir)
+                        # Passer aux bateaux restants
+                        count = self.calc_nb_placements_liste_bateaux(bateaux[1:], count)
+                        # Retirer le bateau placé
+                        self.retirer_bateau(bateau, (i, j), dir)
         return count
-        # Retirer le bateau
 
     def generer_meme_grille(self) -> int:
         """Génére aléatoirement des grilles avec 5 bateaux (un de chaque type) la grille de l'instance courante (self.grille).  
