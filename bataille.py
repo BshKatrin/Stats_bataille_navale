@@ -8,7 +8,7 @@ class Bataille:
         self.plat = grille
 
     def joue(self, position: tuple[int, int]) -> None:
-        """Joue la case de la grille à la position. Si il y avait un bateau, alors case = BAT_TOUCHE, sinon rien ne se passe.
+        """Joue la case de la grille à la position. Si il y avait un bateau, alors case = BAT_TOUCHE, sinon case = RATE.
 
         Args:
             position: tuple (ligne, col) qui désigne la case à jouer
@@ -26,7 +26,7 @@ class Bataille:
         """Vérifie si tous les bateaux ont été coulés dans la grille (i.e. une victoire dans le jeu).
 
         Return:
-            Un booléen True s'il n y a plus des bateaux restants, i.e. toutes les cases de la grille sont à -1 ou 0.
+            Un booléen True s'il n y a plus des bateaux restants, i.e. toutes les cases de la grille sont à 0, -1 ou -2.
         """
 
         for ligne in range(0, self.plat.n):
@@ -37,17 +37,23 @@ class Bataille:
 
     def reset(self) -> None:
         """Commence le jeu dès le début. Recommencer sur la meme grille mais avec les bateaux sans pannes.
+        Reinitialise la grille avec les bateaux à la même position qu'avant avec aucun coup joué.
         """
+        self.plat.grille.fill(0)
         for (ligne, col, dir), bateau in self.plat.bateaux_places.items():
             self.plat.place(bateau, (ligne, col), dir)
+        return
 
 
 if __name__ == "__main__":
-    bat = Bataille(10)
+    bat = Bataille(Grille.genere_grille(10))
+    print(bat.plat.grille)
     for i in range(0, 10):
         for j in range(0, 10):
             bat.joue((i, j))
+    print("apres jeu")
     print(bat.plat.grille)
     print(bat.victoire())
     bat.reset()
+    print("apres reset")
     print(bat.plat.grille)
