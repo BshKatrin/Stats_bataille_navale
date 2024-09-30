@@ -27,7 +27,9 @@ def calc_proba(i, b, n):
 
 
 if __name__ == '__main__':
-    data = pd.read_csv('data2.csv', sep=',', header=None)
+    #Deux courbes ensemble
+    data = pd.read_csv('data.csv', sep=',', header=None)
+    data2 = pd.read_csv('data2.csv', sep=',', header=None)
     nb_jeux = 10000
     b, n = 17, 100
 
@@ -35,31 +37,14 @@ if __name__ == '__main__':
 
     nb_coups = data.iloc[:, 0]
     proba_data = np.array([val / nb_jeux for val in np.array(data.iloc[:, 1])])
+    proba_data2 = np.array([val / nb_jeux for val in np.array(data2.iloc[:, 1])])
 
-    ax.plot(nb_coups, proba_data, 'b', label='Données')
+    ax.plot(nb_coups, proba_data, 'b', label='Données sans stratégie')
+    ax.plot(nb_coups, proba_data2, 'r', label='Données avec stratégie')
 
     ax.set_xlim(17, 100)
-    ax.set_ylim(0, max(proba_data))
+    ax.set_ylim(0, max(max(proba_data), max(proba_data2)))
 
-    # Espérance
-    esp = int(calc_esp_formule(b, n))
-    proba_esp = calc_proba(esp, b, n)
-
-    x_esp = np.arange(b, esp+1, 1)
-    # Ligne horizontale
-    y_esp_hor = np.array([proba_esp] * len(x_esp))
-    ax.plot(x_esp, y_esp_hor, '--r')
-    # Ligne verticale
-    ax.vlines(x=x_esp[-1], ymin=0, ymax=proba_esp, linestyles='dashed', colors='r')
-    # Point
-    ax.plot(esp, proba_esp, 'r.', label="Espérance")
-
-    ax.set_xticks(np.append(np.arange(20, 100+1, 10), esp))
-
-    # Probabilité calculée
-    x_modelisation = np.arange(b, n + 1, 1)
-    y_modelisation = np.array([calc_proba(i, b, n) for i in x_modelisation])
-    ax.plot(x_modelisation, y_modelisation, 'gray', label='Modélisation')
 
     ax.set_title('Distribution de la variable aléatoire X (10000 jeux)')
     ax.set_xlabel('Nombre de coups i')
