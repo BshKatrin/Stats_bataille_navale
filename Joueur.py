@@ -37,15 +37,17 @@ class Joueur:
         return nb_coups
 
     def cases_connexes(self, bataille: Bataille, position: tuple) -> tuple:
-        """Fonction auxiliaire de jouer_strat(), joue les cases connexes de la case position non jouées si possible.
+        """Fonction auxiliaire de jouer_strat(), joue les cases connexes de la case position non jouées si possible, 
+        au maximum peut jouer 4 coups sur les 4 cases connexes.
         
         Args:
             bataille: la grille de jeu
             position: tuple (ligne, col) représentant la position de la case jouée
         
         Returns:
-            Retourne la grille et le nombre de cases annexes jouées (grille, nb)
+            Retourne la grille modifiée et le nombre de coups jouées (grille, nb)
         """
+
         ligne, col = position
         grille_jeu = bataille.plat.grille
         n = bataille.plat.n 
@@ -71,8 +73,6 @@ class Joueur:
             if grille_jeu[ligne + 1][col] not in {BAT_TOUCHE, RATE}:
                 bataille.joue((ligne + 1, col))
                 nb_coup += 1
-        print("apres annexe")
-        print(grille_jeu)
         return (grille_jeu, nb_coup)
 
     def jouer_strat(self, taille_grille: int) -> int:
@@ -104,8 +104,6 @@ class Joueur:
                     nb_coups += 1
                 else:                               # cas bateau
                     bataille.joue((ligne, col))
-                    print("pos, apres jeu", ligne, col)
-                    print(bataille.plat.grille)
                     #on joue les cases connexes
                     grille.grille, coup_addi = self.cases_connexes(bataille, (ligne, col))
                     nb_coups += coup_addi + 1
@@ -119,7 +117,3 @@ if __name__ == "__main__":
     nb = joueur.jouer_strat(10)
     print(nb)
 
-    """tot = 0
-    for i in range(100):
-        tot += joueur.jouer_strat(10)
-    print(tot/100) #retourne 87.3"""
