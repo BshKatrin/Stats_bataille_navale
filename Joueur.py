@@ -36,7 +36,7 @@ class Joueur:
         self.score += 1
         return nb_coups
 
-    def cases_connexes(self, bataille: Bataille, position: tuple) -> int:
+    def cases_connexes(self, bataille: Bataille, position: tuple) -> tuple:
         """Fonction auxiliaire de jouer_strat(), joue les cases connexes de la case position non jouées si possible.
         
         Args:
@@ -44,7 +44,7 @@ class Joueur:
             position: tuple (ligne, col) représentant la position de la case jouée
         
         Returns:
-            Retourne le nombre de cases annexes jouées    
+            Retourne la grille et le nombre de cases annexes jouées (grille, nb)
         """
         ligne, col = position
         grille_jeu = bataille.plat.grille
@@ -71,7 +71,9 @@ class Joueur:
             if grille_jeu[ligne + 1][col] not in {BAT_TOUCHE, RATE}:
                 bataille.joue((ligne + 1, col))
                 nb_coup += 1
-        return nb_coup
+        print("apres annexe")
+        print(grille_jeu)
+        return (grille_jeu, nb_coup)
 
     def jouer_strat(self, taille_grille: int) -> int:
         """Joue un jeu de bataille navale jusqu'à la victore, i.e. jusqu'à couler tous les bateaux.
@@ -102,8 +104,11 @@ class Joueur:
                     nb_coups += 1
                 else:                               # cas bateau
                     bataille.joue((ligne, col))
+                    print("pos, apres jeu", ligne, col)
+                    print(bataille.plat.grille)
                     #on joue les cases connexes
-                    nb_coups += self.cases_connexes(bataille, (ligne, col)) + 1
+                    grille.grille, coup_addi = self.cases_connexes(bataille, (ligne, col))
+                    nb_coups += coup_addi + 1
 
         self.score += 1
         return nb_coups
@@ -111,8 +116,10 @@ class Joueur:
 
 if __name__ == "__main__":
     joueur = Joueur("Joueur")
+    nb = joueur.jouer_strat(10)
+    print(nb)
 
-    tot = 0
-    for i in range(10000):
+    """tot = 0
+    for i in range(100):
         tot += joueur.jouer_strat(10)
-    print(tot/10000) #retourne 87.3
+    print(tot/100) #retourne 87.3"""
