@@ -61,9 +61,9 @@ if __name__ == '__main__':
     y_modelisation = np.array([calc_proba(i, b, n) for i in x_modelisation])
     ax.plot(x_modelisation, y_modelisation, 'gray', label='Modélisation')
 
-    ax.set_title('Distribution de la variable aléatoire (10000 jeux)')
-    ax.set_xlabel('Nombre de coups')
-    ax.set_ylabel('Probabilité')
+    ax.set_title('Distribution de la variable aléatoire X (10000 jeux)')
+    ax.set_xlabel('Nombre de coups i')
+    ax.set_ylabel('Probabilité P(X = i)')
     ax.legend()
 
     plt.show()

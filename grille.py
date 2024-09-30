@@ -295,12 +295,43 @@ class Grille:
             grilleB = self.genere_grille(self.n)
         return count
 
+    def _maj_grille_placements(self, bateau: int, position: tuple[int, int], dir: int, grille_ps) -> None:
+        """On suppose qu'il est possible de placer le bateau donné (i.e. il y aura pas de dépassement)"""
+        taille_bat = BAT_CASES[bateau]
+        ligne, col = position
+        if dir == HOR:
+            for j in range(col, col+taille_bat):
+                grille_ps[ligne][j] += 1
+
+        if dir == VER:
+            for i in range(ligne, ligne+taille_bat):
+                grille_ps[i][col] += 1
+
+    def count_nb_placements(self, bateau: int):
+
+        grille_ps = np.zeros((self.n, self.n), dtype=np.int8)
+        for i in range(self.n):
+            for j in range(self.n):
+                for dir in {HOR, VER}:
+                    if self.peut_placer(bateau, (i, j), dir):
+                        self._maj_grille_placements(bateau, (i, j), dir, grille_ps)
+        return grille_ps
+
 
 if __name__ == "__main__":
     grille = Grille(10)
 
-    grille.place_alea(PORTE_AVION)
-    grille.place_alea(CROISEUR)
-    grille.place_alea(CONTRE_TORPILLEURS)
-    grille.place_alea(SOUS_MARIN)
-    grille.place_alea(TORPILLEUR)
+    print(grille.grille)
+    grille_ps = grille.count_nb_placements(PORTE_AVION)
+    print(grille_ps)
+    # for bat, size in BAT_CASES.items():
+    #     grille_ps = grille.count_nb_placements(bat)
+    #     print(size)
+    #     print(grille_ps)
+    # for i in range(10):
+    #     print(grille.generer_meme_grille())
+    # grille.place_alea(PORTE_AVION)
+    # grille.place_alea(CROISEUR)
+    # grille.place_alea(CONTRE_TORPILLEURS)
+    # grille.place_alea(SOUS_MARIN)
+    # grille.place_alea(TORPILLEUR)
