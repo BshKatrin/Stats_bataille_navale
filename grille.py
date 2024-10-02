@@ -8,15 +8,14 @@ from constants import *
 
 class Grille:
     def __init__(self, n: int):
-        self.n: int = n  # taille d'un cote
+        self.n: int = n  # taille d'un côté
         self.grille = np.zeros((n, n), dtype=np.int8)
 
-        # Dict qui sert uniquement pour optimiser la fonction d'égalité entre 2 grilles si pour la fonction eq_alea
-        # Associe au triplet (ligne, colonne, direction) un type du bateau
+        # Dict qui associe au triplet (ligne, colonne, direction) un type du bateau
         # (ligne, colonne) indique le début du bateau
-        self.bateaux_places: Dict[(int, int, int), int] = dict()
+        self.bateaux_places: Dict[int, (int, int, int)] = dict()
 
-    def peut_placer(self, bateau: int, position: tuple[int, int], direction: int) -> bool:
+    def peut_placer(self, bateau: int, position: tuple[int, int], direction: int, proba_simple: bool = False) -> bool:
         """Vérifie s'il est possible de placer le bateau à la position dans la direction donnée sur la grille.
 
         Args:
@@ -24,6 +23,8 @@ class Grille:
             position: (ligne, colonne) indique la position sur la grille à laquelle placer la bateau.
                 (0, 0) représente le coin supérieur gauche.
             direction: Direction (constante) dans laquelle placer le bateau.
+            proba_simple: Un booléen qui doit être à True si la stratégie (ver. proba simple) est utilisée.
+                Sinon, doit être à False. Default = False.
 
         Returns:
             bool: True si le placement est possible, False sinon.
@@ -41,8 +42,12 @@ class Grille:
 
             # on verifie si les cases sont libres
             for i in range(col, col + taille_bat):
-                if self.grille[ligne][i] != VIDE:
-                    return False
+                if proba_simple:
+                    if self.grille[ligne][i] not in {VIDE, BAT_TOUCHE}:
+                        return False
+                else:
+                    if self.grille[ligne][i] != VIDE:
+                        return False
 
             return True
 
@@ -53,7 +58,7 @@ class Grille:
 
             # on verifie si les cases sont libres
             for i in range(ligne, ligne + taille_bat):
-                if self.grille[i][col] != VIDE:
+                if self.grille[i][col] not in {VIDE, BAT_TOUCHE}:
                     return False
 
             return True
@@ -81,7 +86,7 @@ class Grille:
             for i in range(ligne, ligne + taille_bat):
                 self.grille[i][col] = bateau
 
-        self.bateaux_places[(ligne, col, direction)] = bateau
+        self.bateaux_places[bateau] = (ligne, col, direction)
 
     def place_alea(self, bateau: int) -> None:
         """Place le bateau aléatoirement dans la grille.
@@ -143,7 +148,7 @@ class Grille:
 
     def eq(self, grilleA: Self) -> bool:
         """Vérifie l'égalité entre deux grilles. L'égalité entre deux grilles est considérés vérifiée ssi elles ont:
-            - la même taille 
+            - la même taille
             - les mêmes cases vides
             - les mêmes bateaux sur les mêmes cases
 
@@ -168,12 +173,12 @@ class Grille:
         return True
 
     def _eq_dict_bateaux(self, grilleA: Self) -> bool:
-        """Vérifie l'égalité entre deux grilles. Utiliser uniquement pour la fonction eq_alea (pour optimisation).  
-            Hypothèse:  
+        """Vérifie l'égalité entre deux grilles. Utiliser uniquement pour la fonction eq_alea (pour optimisation).
+            Hypothèse:
                 - Les cases qui ne sont pas stockées dans le dictionnaire self.bateaux_places sont VIDES.
 
         Args:
-            grilleA: La grille avec laquelle il faut vérifier l'égalité.  
+            grilleA: La grille avec laquelle il faut vérifier l'égalité.
 
         Returns:
             Un booléan True ssi les grilles sont égales. Sinon, False.
@@ -193,7 +198,7 @@ class Grille:
             n: Taille de la nouvelle grille.
 
         Returns:
-            Une nouvelle instance de la classe Grille dont le tableau 'grille' est rempli des bateaux. 
+            Une nouvelle instance de la classe Grille dont le tableau 'grille' est rempli des bateaux.
         """
 
         nouv_grille = Grille(n)
@@ -237,7 +242,7 @@ class Grille:
         return self.n * cases_possibles * 2
 
     def calc_nb_placements_liste_bateaux(self, bateaux: list[int], count=0) -> int:
-        """Calcule le nombre de configurations possibles à partir de la grille vide.  
+        """Calcule le nombre de configurations possibles à partir de la grille vide.
             Les bateaux ne peuvent pas se superposer.
 
         Args:
@@ -278,7 +283,7 @@ class Grille:
         return count
 
     def generer_meme_grille(self) -> int:
-        """Génére aléatoirement des grilles avec 5 bateaux (un de chaque type) la grille de l'instance courante (self.grille).  
+        """Génére aléatoirement des grilles avec 5 bateaux (un de chaque type) la grille de l'instance courante (self.grille).
             Hypothèse: self.grille ne contient que la liste des 5 bateaux, un de chaque type.
 
         Returns:
@@ -295,43 +300,102 @@ class Grille:
             grilleB = self.genere_grille(self.n)
         return count
 
-    def _maj_grille_placements(self, bateau: int, position: tuple[int, int], dir: int, grille_ps) -> None:
-        """On suppose qu'il est possible de placer le bateau donné (i.e. il y aura pas de dépassement)"""
-        taille_bat = BAT_CASES[bateau]
+    def _choisir_max_pos(self, pos_cour: tuple[int, int], max_cour: int,
+                         pos_nouv: tuple[int, int], grille_ps: np.ndarray) -> tuple[int, tuple[int, int]]:
+        """Choisit la position (ligne, col) telle que grille_ps[ligne][col] contient le nombre maximale 
+            parmi toutes les autres cases. Fonction auxilière pour 'Joueur.jouer_proba_simple'.
+
+        Args:
+            pos_cour: position (ligne, col) sur la grille telle que grille_ps[ligne][col] = le nombre maximale
+                (avant MAJ de la grille)
+            max_cour: le nombre maximale (avant MAJ de la grille)
+            pos_nouv: position (ligne, col) sur la grille avec laquelle il faudra choisir le nouveau nombre maximale.
+            grille_ps: grille-probabilité associée à un bateau.
+
+        Returns:
+            La position P sur la grille. P = pos_nouv si max_cour n'est plus le maximum. Sinon, P = pos_cour.
+        """
+
+        ligne, col = pos_nouv
+        val_grille = grille_ps[ligne][col]
+        if val_grille > max_cour:
+            return val_grille, pos_nouv
+        return max_cour, pos_cour
+
+    def _maj_nb_placements(self, bateau: int, position: tuple[int, int], dir: int, grille_ps: np.ndarray) -> tuple[int, int]:
+        """MAJ de la grille-probabilité pour un bateau qui peut être placé sur la position donnée.
+            Fonction auxiliaire pour 'calc_nb_placements'.
+
+        Args:
+            bateau: Type du bateau (constante).
+            position: Position (ligne, colonne) sur la grille. Le placement du bateau sur cette position doit être possible.
+            direction: Direction (constante) dans laquelle placer le bateau.
+            grille_ps: Grille-probablité associée à un bateau donné.
+
+        Returns:
+            La position (ligne, col) sur la grille telle que grille_ps[ligne][col] contient le nombre maximale
+                parmi les cases mises à jour.
+        """
+
         ligne, col = position
+        taille = BAT_CASES[bateau]
+        nb_cases_bat_touche = 0
+
+        val_max = -1
+        pos_max = (-1, -1)
         if dir == HOR:
-            for j in range(col, col+taille_bat):
-                grille_ps[ligne][j] += 1
+            for j in range(col, col + taille):
+                if self.grille[ligne][j] == BAT_TOUCHE:
+                    nb_cases_bat_touche += 1
+                else:
+                    grille_ps[ligne][j] += 1
+                    val_max, pos_max = self._choisir_max_pos(pos_max, val_max, (ligne, j), grille_ps)
+
+            # Augmenter les probas
+            if nb_cases_bat_touche:
+                for j in range(col, col + taille):
+                    if not self.grille[ligne][j] == BAT_TOUCHE:
+                        grille_ps[ligne][j] += nb_cases_bat_touche
+                    val_max, pos_max = self._choisir_max_pos(pos_max, val_max, (ligne, j), grille_ps)
 
         if dir == VER:
-            for i in range(ligne, ligne+taille_bat):
-                grille_ps[i][col] += 1
+            for i in range(ligne, ligne+taille):
+                if self.grille[i][col] == BAT_TOUCHE:
+                    nb_cases_bat_touche += 1
+                else:
+                    grille_ps[i][col] += 1
+                    val_max, pos_max = self._choisir_max_pos(pos_max, val_max, (i, col), grille_ps)
 
-    def count_nb_placements(self, bateau: int):
+            # Augmenter les probas
+            if nb_cases_bat_touche:
+                for i in range(ligne, ligne+taille):
+                    if not self.grille[i][col] == BAT_TOUCHE:
+                        grille_ps[i][col] += nb_cases_bat_touche
+                    val_max, pos_max = self._choisir_max_pos(pos_max, val_max, (i, col), grille_ps)
+        return pos_max
 
-        grille_ps = np.zeros((self.n, self.n), dtype=np.int8)
+    def calc_nb_placements(self, bateau: int, grille_ps: np.ndarray) -> tuple[int, int]:
+        """MAJ de la grille-probabilité. La fonction calcule toutes les configurations possibles.
+
+        Args:
+            bateau: Type du bateau (constante).
+            grille_ps: Grille-probabilité. Toutes ces valeurs doivent être à 0.
+
+        Returns:
+            La position (ligne, col) sur la grille telle que grille_ps[ligne][col] contient le nombre maximale
+                parmi toutes ces autres cases.
+        """
+
+        mx = -1
+        pos_max = (-1, -1)
         for i in range(self.n):
             for j in range(self.n):
-                for dir in {HOR, VER}:
-                    if self.peut_placer(bateau, (i, j), dir):
-                        self._maj_grille_placements(bateau, (i, j), dir, grille_ps)
-        return grille_ps
+                for dir in {VER, HOR}:
+                    if self.peut_placer(bateau, (i, j), dir, proba_simple=True):
+                        pos_nouv = self._maj_nb_placements(bateau, (i, j), dir, grille_ps)
+                        mx, pos_max = self._choisir_max_pos(pos_max, mx, pos_nouv, grille_ps)
+        return pos_max
 
 
 if __name__ == "__main__":
-    grille = Grille(10)
-
-    print(grille.grille)
-    grille_ps = grille.count_nb_placements(PORTE_AVION)
-    print(grille_ps)
-    # for bat, size in BAT_CASES.items():
-    #     grille_ps = grille.count_nb_placements(bat)
-    #     print(size)
-    #     print(grille_ps)
-    # for i in range(10):
-    #     print(grille.generer_meme_grille())
-    # grille.place_alea(PORTE_AVION)
-    # grille.place_alea(CROISEUR)
-    # grille.place_alea(CONTRE_TORPILLEURS)
-    # grille.place_alea(SOUS_MARIN)
-    # grille.place_alea(TORPILLEUR)
+    pass

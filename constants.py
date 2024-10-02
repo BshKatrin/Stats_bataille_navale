@@ -10,6 +10,9 @@ TORPILLEUR: int = 5
 # Taille des bateaux
 BAT_CASES: Dict[int, int] = {PORTE_AVION: 5, CROISEUR: 4, CONTRE_TORPILLEURS: 3, SOUS_MARIN: 3, TORPILLEUR: 2}
 
+# Tous les bateaux rangés par leurs tailles de manière décroissante
+BATEAUX = [PORTE_AVION, CROISEUR, CONTRE_TORPILLEURS, SOUS_MARIN, TORPILLEUR]
+
 # Marquage de la case vide
 VIDE: int = 0
 

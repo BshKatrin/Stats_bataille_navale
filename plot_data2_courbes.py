@@ -27,26 +27,28 @@ def calc_proba(i, b, n):
 
 
 if __name__ == '__main__':
-    #Deux courbes ensemble
+    # Deux courbes ensemble
     data = pd.read_csv('data.csv', sep=',', header=None)
     data2 = pd.read_csv('data2.csv', sep=',', header=None)
-    nb_jeux = 10000
+    data3 = pd.read_csv('data3.csv', sep=',', header=None)
+
     b, n = 17, 100
 
     fig, ax = plt.subplots()
 
     nb_coups = data.iloc[:, 0]
-    proba_data = np.array([val / nb_jeux for val in np.array(data.iloc[:, 1])])
-    proba_data2 = np.array([val / nb_jeux for val in np.array(data2.iloc[:, 1])])
+    proba_data = np.array([val / 10000 for val in np.array(data.iloc[:, 1])])
+    proba_data2 = np.array([val / 10000 for val in np.array(data2.iloc[:, 1])])
+    proba_data3 = np.array([val / 1000 for val in np.array(data3.iloc[:, 1])])
 
-    ax.plot(nb_coups, proba_data, 'b', label='Données sans stratégie')
-    ax.plot(nb_coups, proba_data2, 'r', label='Données avec stratégie')
+    ax.plot(nb_coups, proba_data, 'b', label='Ver. aléatoire (10 000 jeux)')
+    ax.plot(nb_coups, proba_data2, 'r', label='Ver. heuristique (10 000 jeux)')
+    ax.plot(nb_coups, proba_data3, 'g', label='Ver. proba simple (1000 jeux)')
 
     ax.set_xlim(17, 100)
     ax.set_ylim(0, max(max(proba_data), max(proba_data2)))
 
-
-    ax.set_title('Distribution de la variable aléatoire X (10000 jeux)')
+    ax.set_title('Distribution de la variable aléatoire X')
     ax.set_xlabel('Nombre de coups i')
     ax.set_ylabel('Probabilité P(X = i)')
     ax.legend()
