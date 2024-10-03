@@ -211,6 +211,8 @@ class Joueur:
 
             # Eliminer le bateau s'il a été coulé
             if bateau_coule_flag:
+                ligne, col, dir = grille_remplie.bateaux_places[type_bat]
+                grille_vide.place(type_bat, (ligne, col), dir)
                 bateaux_restants.remove(type_bat)
                 del bateaux_grilles[type_bat]
                 del bateaux_pos_max[type_bat]
@@ -222,7 +224,6 @@ class Joueur:
                 grille_ps.fill(0)
                 pos_max = grille_vide.calc_nb_placements(bateau, grille_ps)
                 bateaux_pos_max[bateau] = pos_max
-
             # print(grille_remplie.grille)
             # for bateau in bateaux_restants:
             #     print(bateau, bateaux_grilles[bateau], sep='\n')
