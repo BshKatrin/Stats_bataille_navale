@@ -1,26 +1,75 @@
 from random import randint
+from math import floor
 import numpy as np
 
 class ObjPerdu:
     def __init__(self, n: int, ps: float): 
         self.grille = np.zeros((n, n), dtype=np.int8)
-        self.grille_proba = np.zeros((n, n), dtype=float)
-        self.ps = ps  
+        self.grille_proba = np.zeros((n, n), dtype=float) #les proba seront prise à 3 chiffres apres virgules, donc x1000
+        self.ps = ps #sur int
         self.n = n
 
         #placement de l'objet
         self.obj_pos = (randint(0, n-1), randint(0, n-1))
         self.grille[self.obj_pos[0]][self.obj_pos[1]] = 1 
 
-    def init_proba(self): #autres config done
+    def init_proba_uniform(self): #autres config do
         """Initialise la grille_proba avec les probabilités de chaque case
-        de manière uniforme : pi = 1/nb_cases"""
-
-        prob = 1/(self.n)**2
+        de manière uniforme : pi = 1/nb_cases
+        """
+        #proba x1000
+        prob = (1/(self.n)**2)
+        print(prob)
 
         for ligne in range(self.n):
             for col in range(self.n):
                 self.grille_proba[ligne][col] = prob
+        return
+    
+    def init_proba_center(self):
+        """Initialise la grille_prob avec une probabilité élevée au centre de la grille, et faible au bords
+        Répartition des probabilités
+        Somme pi des bords = 0.2
+        Somme pi des centres = 0.8
+
+        Nombre de cases au bords: 2*self.n + 2*(self.n -2)
+
+        Hypothese: self.n > 2
+        """
+
+        nb_cases_bords = 2*self.n + 2*(self.n -2)
+        proba_bord = floor(0.2/nb_cases_bords * 1000)
+        proba_centre = floor(0.8/(self.n**2 - nb_cases_bords) * 1000)
+
+        for ligne in range(self.n):
+            for col in range(self.n):
+                if (ligne == 0 or ligne == self.n -1) or (col == 0 or col == self.n -1):
+                    self.grille_proba[ligne][col] = proba_bord
+                else:
+                    self.grille_proba[ligne][col] = proba_centre
+        return
+    
+    def init_proba_bords(self):
+        """Initialise la grille_prob avec une probabilité élevée aux bords de la grille, et faible au centre
+        Répartition des probabilités
+        Somme pi des bords = 0.8
+        Somme pi des centres = 0.2
+
+        Nombre de cases au bords: 2*self.n + 2*(self.n -2)
+
+        Hypothese: self.n > 2
+        """
+
+        nb_cases_bords = 2*self.n + 2*(self.n -2)
+        proba_bord = 0.8/nb_cases_bords
+        proba_centre = 0.2/(self.n**2 - nb_cases_bords)
+
+        for ligne in range(self.n):
+            for col in range(self.n):
+                if (ligne == 0 or ligne == self.n -1) or (col == 0 or col == self.n -1):
+                    self.grille_proba[ligne][col] = proba_bord
+                else:
+                    self.grille_proba[ligne][col] = proba_centre
         return
 
     def senseur(self, position: tuple[int, int]) -> int: #done
@@ -31,7 +80,16 @@ class ObjPerdu:
         if position == self.obj_pos:
             return 1 if randint(0, 100)/100 < self.ps else 0 
         return 0
-    
+
+    def get_somme_pi(self, position:tuple[int, int])->int:
+        """retourne 1 - somme pi pour i != k donné par la position"""
+        count = 0
+        for i in range(self.n):
+            for j in range(self.n):
+                if (i, j) != position:
+                    count += self.grille_proba[i][j]
+        return count
+
     def maj_grille_prob(self, position: tuple[int, int]):
         """Fonction qui met à jour la grille de proba après visite d'une case et le senseur a renvoyé 0.
         Args:
@@ -39,11 +97,19 @@ class ObjPerdu:
         """
         
         ligne, col = position
-        pi_k = self.grille_proba[ligne][col]
-        proba_y1_z0 = ((1 - self.ps)*pi_k)/(1 - pi_k*self.ps)
+        pi_k = self.grille_proba[ligne][col] #int
+        #pi_k = 1 - somme pi
+        pi_sans_k = 1 - self.get_somme_pi(position)
+        #proba_y1_z0 = ((1 - self.ps)*pi_sans_k)/(1 - pi_sans_k*self.ps)
 
-        difference = abs(pi_k - proba_y1_z0) #le reste a distribuer aux N-1
-        diff_div = difference / (self.n -1)
+        proba_y1_z0 = ((1 - self.ps)*pi_k)/(1 - pi_k*self.ps)
+        print("pik et proba\n", pi_k, proba_y1_z0)
+
+        """difference = pi_k - proba_y1_z0 #le reste a distribuer aux N-1
+        diff_div = difference / (self.n -1)"""
+
+        difference = (1 - pi_k)/(1 - self.ps*pi_k)
+        diff_div = difference / (self.n - 1)
 
         #on change proba pik en P(Y=1|Z=0)
         self.grille_proba[ligne][col] = proba_y1_z0
@@ -51,7 +117,8 @@ class ObjPerdu:
         #on redistribue
         for i in range(0, self.n):
             for j in range(0, self.n):
-                if (i==ligne and j==col):
+                if (i, j) == position:
+                    print("rhezjrhfuzrhjehrzj")
                     pass
                 else:
                     self.grille_proba[i][j] += diff_div
@@ -107,13 +174,17 @@ class ObjPerdu:
             self.maj_grille_prob((ligne_max, col_max))      #MAJ grille proba
             
             ligne_max, col_max = self.max_proba_grille((ligne_max, col_max)) #nouvelle case à choisir
-            #print("\n\n apres maj\n",self.grille_proba, "\n",ligne_max, col_max,"\n\n")
+            print("\n\n apres maj\n",self.grille_proba, "\n",ligne_max, col_max,"\n",self.tmp_sum())
             count += 1
 
         return count
 
 if __name__ == '__main__':
-    jeu = ObjPerdu(5, .5)
+    jeu = ObjPerdu(5, 0.3)
     print(jeu.grille)
-    jeu.init_proba()
+    
+    jeu.init_proba_uniform()
+    print(jeu.grille_proba)
+    print(jeu.tmp_sum())
+    
     print(jeu.recherche())
