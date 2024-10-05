@@ -89,11 +89,12 @@ class Joueur:
         Returns:
             Le nombre de coups qu'il fallait faire pour couler tous les bateaux.
         """
+
         if taille_grille < 5:
             print("jouer_heuristique : taille_grille < 5")
             return 0
 
-            # on génère une grille de jeu
+        # on génère une grille de jeu
         grille = Grille.genere_grille(taille_grille)
         bataille = Bataille(grille)
         nb_coups = 0
@@ -182,52 +183,57 @@ class Joueur:
         nb_coups = 0
         # Grille avec 5 bateaux
         grille_remplie = Grille.genere_grille(taille_grille)
-        # Grille vide
-        grille_vide = Grille(taille_grille)
         bataille = Bataille(grille_remplie)
 
-        # Initialisation des grilles-probas pour chaque bateaux
+        # Grille vide
+        grille_vide = Grille(taille_grille)
+
+        # Bateau non encore coulés
         bateaux_restants = {bat for bat in BATEAUX}
 
+        # Initialisation des grilles-probas pour chaque bateaux
         bateaux_grilles = self._init_bateaux_grilles(bateaux_restants, taille_grille)
         bateaux_pos_max = dict()
 
+        # Remplie les grilles-probas, choisir les cases avec la proba max
         for bateau in bateaux_restants:
             grille_ps = bateaux_grilles[bateau]
             pos_max = grille_vide.calc_nb_placements(bateau, grille_ps)
             bateaux_pos_max[bateau] = pos_max
 
-        # for bateau in bateaux_restants:
-        #     print(bateau, bateaux_grilles[bateau], sep='\n')
-
         while (not bataille.victoire()):
             nb_coups += 1
+
+            # Choisir la case avec la proba la plus élevée parmi toutes les grilles-probas
             (ligne, col) = self._choisir_max(bateaux_grilles, bateaux_pos_max)
+            # Type_case = BAT_TOUCHE ou RATE
             type_case = bataille.joue((ligne, col))
             grille_vide.grille[ligne][col] = type_case
 
             # Vérifier si le bateau a été coulé
             bateau_coule_flag, type_bat = bataille.bateaux_coules(bateaux_restants)
 
-            # Eliminer le bateau s'il a été coulé
+            # Eliminer le bateau s'il a été coulé, éliminer sa grille-proba
             if bateau_coule_flag:
                 ligne, col, dir = grille_remplie.bateaux_places[type_bat]
+                # Placer le bateau coulé sur la grille_vide
                 grille_vide.place(type_bat, (ligne, col), dir)
+                # Éliminter le bateau
                 bateaux_restants.remove(type_bat)
+                # Éliminer la grille
                 del bateaux_grilles[type_bat]
+                # Éliminer la case max associée à la grille
                 del bateaux_pos_max[type_bat]
 
-            # MAJ
+            # MAJ des grilles-probas restantes
             for bateau in bateaux_restants:
                 grille_ps = bateaux_grilles[bateau]
                 # Annuler toutes les cases pour le recalcul des configurations
                 grille_ps.fill(0)
+                # MAJ des max
                 pos_max = grille_vide.calc_nb_placements(bateau, grille_ps)
                 bateaux_pos_max[bateau] = pos_max
-            # print(grille_remplie.grille)
-            # for bateau in bateaux_restants:
-            #     print(bateau, bateaux_grilles[bateau], sep='\n')
-            # input()
+
         return nb_coups
 
 

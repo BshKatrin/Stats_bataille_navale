@@ -27,7 +27,7 @@ def calc_proba(i, b, n):
 
 
 if __name__ == '__main__':
-    data = pd.read_csv('data2.csv', sep=',', header=None)
+    data = pd.read_csv('data.csv', sep=',', header=None)
     nb_jeux = 10000
     b, n = 17, 100
 
