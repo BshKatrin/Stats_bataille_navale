@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from joueur import Joueur
+from Joueur import Joueur
 
 # DATA GENERATION
 if __name__ == '__main__':

@@ -28,16 +28,17 @@ class ObjPerdu:
         Somme proba pi des bords = 0.2
         Somme proba pi des centres = 0.8
 
-        Nombre de cases aux bords: 2*self.n + 2*(self.n - 2)
+        Les bords de la grille représentent 2/3 des lignes et des colonnes de la grille
         """
-        nb_cases_bords = 2*self.n + 2*(self.n - 2)
+        longb = self.n//3 #longueur d'un bord
+        nb_cases_bords = 2*(self.n*longb) + 2*(self.n - 2*longb)
 
         proba_bord = 0.2/nb_cases_bords
         proba_centre = 0.8/(self.n**2 - nb_cases_bords)
 
         for ligne in range(self.n):
             for col in range(self.n):
-                if (ligne == 0 or ligne == self.n -1) or (col == 0 or col == self.n -1):
+                if (ligne < longb or self.n - longb <= ligne) or (col < longb or self.n - longb <= col):
                     self.grille_proba[ligne][col] = proba_bord
                 else:
                     self.grille_proba[ligne][col] = proba_centre
@@ -53,14 +54,15 @@ class ObjPerdu:
 
         Nombre de cases aux bords: 2*self.n + 2*(self.n - 2)
         """
-        nb_cases_bords = 2*self.n + 2*(self.n - 2)
+        longb = self.n//3 #longueur du bord
+        nb_cases_bords = 2*(self.n*longb) + 2*(self.n - 2*longb)
 
         proba_bord = 0.8/nb_cases_bords
         proba_centre = 0.2/(self.n**2 - nb_cases_bords)
 
         for ligne in range(self.n):
             for col in range(self.n):
-                if (ligne == 0 or ligne == self.n -1) or (col == 0 or col == self.n -1):
+                if (ligne < longb or self.n - longb <= ligne) or (col < longb or self.n - longb <= col):
                     self.grille_proba[ligne][col] = proba_bord
                 else:
                     self.grille_proba[ligne][col] = proba_centre
@@ -154,6 +156,18 @@ class ObjPerdu:
         return count
 
 if __name__ == '__main__':
-    jeu = ObjPerdu(10, 0.3)
+    
+    jeu = ObjPerdu(20, 0.5)
     jeu.init_proba_center()
-    print(jeu.recherche())
+    print(jeu.grille_proba)
+    
+    """
+    for j in [0.1, 0.3, 0.5, 0.7, 0.9]:
+        count = 0
+        print("for :", j)
+        jeu = ObjPerdu(20, j)
+        jeu.init_proba_uniform()
+        for i in range(1000):
+            count += jeu.recherche()   
+        print("nb coups pour ", j, " uniform ",count/1000)"""
+        
