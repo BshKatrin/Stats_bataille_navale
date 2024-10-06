@@ -13,7 +13,7 @@ BAT_CASES: Dict[int, int] = {PORTE_AVION: 5, CROISEUR: 4, CONTRE_TORPILLEURS: 3,
 # Tous les bateaux rangés par leurs tailles de manière décroissante
 BATEAUX = [PORTE_AVION, CROISEUR, CONTRE_TORPILLEURS, SOUS_MARIN, TORPILLEUR]
 
-# Marquage de la case vide
+# Marquage de la case vide. VIDE doit être plus petit que les type des bateaux.
 VIDE: int = 0
 
 # Simulation du jeu

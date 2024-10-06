@@ -11,8 +11,10 @@ class Bataille:
         """Joue la case de la grille à la position. Si il y avait un bateau, alors case = BAT_TOUCHE, sinon case = RATE.
 
         Args:
-            position: tuple (ligne, col) qui désigne la case à jouer
+            position: (ligne, col) qui désigne la case sur la grille à jouer.
+                (0, 0) représente le coin supérieur gauche.
         """
+
         ligne, col = position
 
         if self.plat.grille[ligne][col] == VIDE:
@@ -23,7 +25,14 @@ class Bataille:
         return BAT_TOUCHE
 
     def _bateau_coule(self, bateau: int) -> bool:
-        """Retourne True ssi bateau est coulé"""
+        """Vérifie si le bateau donné a été coulé.
+
+        Args:
+            bateau : Type du bateau (constante).
+
+        Returns:
+            Un booléen True si le bateau a été coulé. Sinon, False.
+        """
 
         (ligne, col, dir) = self.plat.bateaux_places[bateau]
         taille = BAT_CASES[bateau]
@@ -42,9 +51,15 @@ class Bataille:
         return False
 
     def bateaux_coules(self, bateaux: list[int]) -> tuple[bool, int]:
-        """Retourne True, le type de bateau coulé (les bateaux sont dans une liste bateaux).
-        False et -1 si aucun bateau était coulé
+        """Trouve les bateaux qui ont été coulés. Hypothèse : il n'y a qu'un seul bateau coulé parmi bateaux donnés.
+
+        Args:
+            bateaux : Liste des bateaux (des constantes) parmi lesquels il faut trouver les bateaux coulés.
+
+        Returns:
+            Un booléen True et le type de bateau coulé. False et -1 si aucun bateau est coulé.
         """
+
         for bateau in bateaux:
             if self._bateau_coule(bateau):
                 return True, bateau
@@ -55,6 +70,7 @@ class Bataille:
 
         Return:
             Un booléen True s'il n y a plus des bateaux restants, i.e. toutes les cases de la grille sont à 0, -1 ou -2.
+            Sinon, False.
         """
 
         for ligne in range(0, self.plat.n):
@@ -64,9 +80,9 @@ class Bataille:
         return True
 
     def reset(self) -> None:
-        """Commence le jeu dès le début. Recommencer sur la meme grille mais avec les bateaux sans pannes.
-        Reinitialise la grille avec les bateaux à la même position qu'avant avec aucun coup joué.
-        """
+        """Commence le jeu depuis le début. Recommence sur la même grille, mais avec les bateaux sans avarie.
+        Réinitialise la grille avec les bateaux à leur position initiale, sans aucun coup joué."""
+
         self.plat.grille.fill(0)
         for (ligne, col, dir), bateau in self.plat.bateaux_places.items():
             self.plat.place(bateau, (ligne, col), dir)

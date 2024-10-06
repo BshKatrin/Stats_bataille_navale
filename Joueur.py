@@ -14,7 +14,7 @@ class Joueur:
     def jouer(self, taille_grille: int) -> int:
         """Joue un jeu de bataille navale jusqu'à la victore, i.e. jusqu'à couler tous les bateaux.
             La grille est générée aléatoirement. Elle contient 5 bateaux (un de chaque type).
-            Stratégie: auncune, choix des cases de façon aléatoire.
+            Stratégie: aucune, choix des cases de façon aléatoire.
 
         Args:
             taille_grille : taille de la grille du jeu
@@ -38,16 +38,16 @@ class Joueur:
         self.score += 1
         return nb_coups
 
-    def cases_connexes(self, bataille: Bataille, position: tuple) -> tuple:
-        """Fonction auxiliaire de jouer_strat(), joue les cases connexes de la case position non jouées si possible,
-        au maximum peut jouer 4 coups sur les 4 cases connexes.
+    def _cases_connexes(self, bataille: Bataille, position: tuple[int, int]) -> tuple[np.ndarray, int]:
+        """Joue les cases connexes de la case position non jouées si possible,
+            au maximum peut jouer 4 coups sur les 4 cases connexes. Fonction auxiliaire de jouer_heuristique().
 
         Args:
             bataille: la grille de jeu
-            position: tuple (ligne, col) représentant la position de la case jouée
+            position: (ligne, col) représentant la position de la case jouée
 
         Returns:
-            Retourne la grille modifiée et le nombre de coups jouées (grille, nb)
+            La grille modifiée et le nombre de coups jouées
         """
 
         ligne, col = position
@@ -82,6 +82,7 @@ class Joueur:
             La grille est générée aléatoirement. Elle contient 5 bateaux (un de chaque type).
             Stratégie: Si une case bateau est touchée lors d'un tour, la case du prochain tour sera connexe a la
             case précédente. Sinon la prochaine case est choisie aléatoirement.
+            Augmente le score du joueur de 1 point.
 
         Args:
             taille_grille : taille de la grille du jeu. Doit être supérieure ou égale à 5.
@@ -113,15 +114,16 @@ class Joueur:
                 else:
                     bataille.joue((ligne, col))
                     # on joue les cases connexes
-                    grille.grille, coup_addi = self.cases_connexes(bataille, (ligne, col))
+                    grille.grille, coup_addi = self._cases_connexes(bataille, (ligne, col))
                     nb_coups += coup_addi + 1
 
         self.score += 1
         return nb_coups
 
     def _init_bateaux_grilles(self, bateaux: list[int], taille_grille: int) -> Dict[int, np.ndarray]:
-        """Initialise pour chaque bateau dans une liste 'bateaux' un tableau (2D). Fonction auxilière pour 'jouer_proba_simple'.
-        Chaque case de la grille (nommée grille-probabilité) contiendra le nombre de configurations qui passent par cette case.
+        """Initialise pour chaque bateau dans une liste 'bateaux' un tableau (2D).
+            Chaque case de la grille (nommée grille-probabilité) contiendra le nombre de configurations
+            qui passent par cette case. Fonction auxilière pour 'jouer_proba_simple'.
 
         Args:
             bateaux : liste des constantes associées aux bateaux.
@@ -138,13 +140,13 @@ class Joueur:
 
     def _choisir_max(self, bateaux_grilles: Dict[int, np.ndarray],
                      bateaux_pos_max: Dict[int, tuple[int, int]]) -> tuple[int, int]:
-        """Choisit la position qui correpond à nombre maximale parmi toutes les grilles associées aux bateaux.
+        """Choisit la position qui correpond au nombre maximal parmi toutes les grilles associées aux bateaux.
             Fonction auxilière pour 'jouer_proba_simple'.
 
         Args:
             bateaux_grilles : dictionnaire associant une constante du bateau sa grille-probabilité.
             bateaux_pos_max : dictionnaire associant une constante du bateau la position (ligne, col) telle que 
-                pour la grille associée au bateau on a grille[ligne][col] correpond au nombre maximale parmi toutes les autres cases.
+                pour la grille associée au bateau on a grille[ligne][col] contient au nombre maximal parmi toutes les autres cases.
 
         Returns:
             Une position qui correspond au nombre maximale parmi toutes les grilles associées aux bateaux.
@@ -168,6 +170,7 @@ class Joueur:
             Stratégie: On considère que les positions des bateaux sont indépendantes.
             Pour chaque bateau on calcule la probabilié jointe entre la case et le bateau. 
             À chaque tour on choisit la case qui à la probabilité maximale de contenir le bateau.
+            Augmente le score du joueur de 1 point.
 
         Args:
             taille_grille : taille de la grille du jeu. Doit être supérieure ou égale à 5.
@@ -234,6 +237,7 @@ class Joueur:
                 pos_max = grille_vide.calc_nb_placements(bateau, grille_ps)
                 bateaux_pos_max[bateau] = pos_max
 
+        self.score += 1
         return nb_coups
 
 
