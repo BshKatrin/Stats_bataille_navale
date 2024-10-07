@@ -84,7 +84,7 @@ class Bataille:
         Réinitialise la grille avec les bateaux à leur position initiale, sans aucun coup joué."""
 
         self.plat.grille.fill(0)
-        for (ligne, col, dir), bateau in self.plat.bateaux_places.items():
+        for bateau, (ligne, col, dir) in self.plat.bateaux_places.items():
             self.plat.place(bateau, (ligne, col), dir)
         return
 

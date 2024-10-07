@@ -28,9 +28,9 @@ def calc_proba(i, b, n):
 
 if __name__ == '__main__':
     # Deux courbes ensemble
-    data = pd.read_csv('data.csv', sep=',', header=None)
-    data2 = pd.read_csv('data2.csv', sep=',', header=None)
-    data3 = pd.read_csv('data3.csv', sep=',', header=None)
+    data = pd.read_csv('data/data.csv', sep=',', header=None)
+    data2 = pd.read_csv('data/data2.csv', sep=',', header=None)
+    data3 = pd.read_csv('data/data3.csv', sep=',', header=None)
 
     b, n = 17, 100
 
