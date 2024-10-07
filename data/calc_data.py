@@ -14,4 +14,4 @@ if __name__ == '__main__':
         resultats_jeux[nb_coup] += 1
 
     df = pd.DataFrame(resultats_jeux)
-    df.to_csv('data3.csv')
+    df.to_csv('data/data3.csv')
