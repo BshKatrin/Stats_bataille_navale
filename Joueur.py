@@ -38,7 +38,7 @@ class Joueur:
         self.score += 1
         return nb_coups
 
-    def _cases_connexes(self, bataille: Bataille, position: tuple[int, int], nb_coupe: int=0) -> tuple[np.ndarray, int]:
+    def _cases_connexes(self, bataille: Bataille, position: tuple[int, int], nb_coupe: int = 0) -> tuple[np.ndarray, int]:
         """Joue les cases connexes de la case position non jouées si possible,
             au maximum peut jouer 4 coups sur les 4 cases connexes. Fonction auxiliaire de jouer_heuristique().
             Si une case connexe est une case bateau, alors récursion de la fonction sur la case connexe.
@@ -58,15 +58,15 @@ class Joueur:
         nb_coup = nb_coupe
 
         # case connexe droite
-        if col < n-1: 
+        if col < n-1:
             if grille_jeu[ligne][col+1] not in {BAT_TOUCHE, RATE}:
                 # si case vide
-                if grille_jeu[ligne][col+1] == 0: 
+                if grille_jeu[ligne][col+1] == 0:
                     bataille.joue((ligne, col+1))
                     nb_coup += 1
-                    
+
                 # sinon case bateau
-                else:  
+                else:
                     bataille.joue((ligne, col+1))
                     nb_coup += 1
                     return self._cases_connexes(bataille, (ligne, col+1), nb_coup)
@@ -75,27 +75,26 @@ class Joueur:
         if 0 < col:
             if grille_jeu[ligne][col-1] not in {BAT_TOUCHE, RATE}:
                 # si case vide
-                if grille_jeu[ligne][col-1] == 0: #si vide
+                if grille_jeu[ligne][col-1] == 0:  # si vide
                     bataille.joue((ligne, col-1))
                     nb_coup += 1
 
                 # sinon case bateau
-                else:   
+                else:
                     bataille.joue((ligne, col-1))
                     nb_coup += 1
                     return self._cases_connexes(bataille, (ligne, col-1), nb_coup)
-
 
         # case connexe haut
         if 0 < ligne:
             if grille_jeu[ligne - 1][col] not in {BAT_TOUCHE, RATE}:
                 # si case vide
-                if grille_jeu[ligne-1][col] == 0: 
+                if grille_jeu[ligne-1][col] == 0:
                     bataille.joue((ligne-1, col))
                     nb_coup += 1
 
-                # sinon case bateau       
-                else:   
+                # sinon case bateau
+                else:
                     bataille.joue((ligne-1, col))
                     nb_coup += 1
                     return self._cases_connexes(bataille, (ligne-1, col), nb_coup)
@@ -104,16 +103,16 @@ class Joueur:
         if ligne < n-1:
             if grille_jeu[ligne + 1][col] not in {BAT_TOUCHE, RATE}:
                 # si case vide
-                if grille_jeu[ligne+1][col] == 0: #si vide
+                if grille_jeu[ligne+1][col] == 0:  # si vide
                     bataille.joue((ligne+1, col))
                     nb_coup += 1
 
-                # sinon case bateau     
-                else:   
+                # sinon case bateau
+                else:
                     bataille.joue((ligne+1, col))
                     nb_coup += 1
-                    return self._cases_connexes(bataille, (ligne+1, col), nb_coup)     
-                
+                    return self._cases_connexes(bataille, (ligne+1, col), nb_coup)
+
         return (grille_jeu, nb_coup)
 
     def jouer_heuristique(self, taille_grille: int) -> int:
