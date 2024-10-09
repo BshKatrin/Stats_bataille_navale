@@ -72,15 +72,15 @@ class ObjPerdu:
                     self.grille_proba[ligne][col] = proba_centre
         return
 
-    def senseur(self, position: tuple[int, int]) -> int:  # done
+    def senseur(self, position: tuple[int, int]) -> int:
         """Scanne la case avec le senseur.
 
         Args:
             position: (ligne, colonne) de la case qu'il faut scanner.
 
         Returns:
-            - 0 si la case est vide
-            - 1 avec le proba Ps si la case contient l'objet, 0 sinon.
+            0 si la case est vide
+            1 avec le proba Ps si la case contient l'objet, 0 sinon.
         """
 
         if position == self.obj_pos:
@@ -126,7 +126,7 @@ class ObjPerdu:
                 sm += self.grille_proba[i][j]
         return sm
 
-    def max_proba_grille(self, old_pos: tuple[int, int] = (0, 0)) -> tuple[int, int]:  # done
+    def max_proba_grille(self, old_pos: tuple[int, int] = (0, 0)) -> tuple[int, int]:
         """Recherche la probabilité maximum et la position associée dans la grille des probabilités.
 
         Args:
@@ -186,4 +186,5 @@ if __name__ == '__main__':
         jeu.init_proba_uniform()
         for i in range(1000):
             count += jeu.recherche()   
-        print("nb coups pour ", j, " uniform ",count/1000)"""
+        print("nb coups pour ", j, " uniform ",count/1000)
+    """

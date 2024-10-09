@@ -38,13 +38,15 @@ class Joueur:
         self.score += 1
         return nb_coups
 
-    def _cases_connexes(self, bataille: Bataille, position: tuple[int, int]) -> tuple[np.ndarray, int]:
+    def _cases_connexes(self, bataille: Bataille, position: tuple[int, int], nb_coupe: int = 0) -> tuple[np.ndarray, int]:
         """Joue les cases connexes de la case position non jouées si possible,
             au maximum peut jouer 4 coups sur les 4 cases connexes. Fonction auxiliaire de jouer_heuristique().
+            Si une case connexe est une case bateau, alors récursion de la fonction sur la case connexe.
 
         Args:
             bataille: la grille de jeu
             position: (ligne, col) représentant la position de la case jouée
+            nb_coup: nombre de coup pour la récursion, à 0 par défaut
 
         Returns:
             La grille modifiée et le nombre de coups jouées
@@ -53,28 +55,64 @@ class Joueur:
         ligne, col = position
         grille_jeu = bataille.plat.grille
         n = bataille.plat.n
-        nb_coup = 0
+        nb_coup = nb_coupe
 
-        # a droite
+        # case connexe droite
         if col < n-1:
             if grille_jeu[ligne][col+1] not in {BAT_TOUCHE, RATE}:
-                bataille.joue((ligne, col+1))
-                nb_coup += 1
-        # a gauche
+                # si case vide
+                if grille_jeu[ligne][col+1] == 0:
+                    bataille.joue((ligne, col+1))
+                    nb_coup += 1
+
+                # sinon case bateau
+                else:
+                    bataille.joue((ligne, col+1))
+                    nb_coup += 1
+                    return self._cases_connexes(bataille, (ligne, col+1), nb_coup)
+
+        # case connexe gauche
         if 0 < col:
             if grille_jeu[ligne][col-1] not in {BAT_TOUCHE, RATE}:
-                bataille.joue((ligne, col-1))
-                nb_coup += 1
-        # en haut
+                # si case vide
+                if grille_jeu[ligne][col-1] == 0:  # si vide
+                    bataille.joue((ligne, col-1))
+                    nb_coup += 1
+
+                # sinon case bateau
+                else:
+                    bataille.joue((ligne, col-1))
+                    nb_coup += 1
+                    return self._cases_connexes(bataille, (ligne, col-1), nb_coup)
+
+        # case connexe haut
         if 0 < ligne:
             if grille_jeu[ligne - 1][col] not in {BAT_TOUCHE, RATE}:
-                bataille.joue((ligne - 1, col))
-                nb_coup += 1
-        # en bas
+                # si case vide
+                if grille_jeu[ligne-1][col] == 0:
+                    bataille.joue((ligne-1, col))
+                    nb_coup += 1
+
+                # sinon case bateau
+                else:
+                    bataille.joue((ligne-1, col))
+                    nb_coup += 1
+                    return self._cases_connexes(bataille, (ligne-1, col), nb_coup)
+
+        # case connexe bas
         if ligne < n-1:
             if grille_jeu[ligne + 1][col] not in {BAT_TOUCHE, RATE}:
-                bataille.joue((ligne + 1, col))
-                nb_coup += 1
+                # si case vide
+                if grille_jeu[ligne+1][col] == 0:  # si vide
+                    bataille.joue((ligne+1, col))
+                    nb_coup += 1
+
+                # sinon case bateau
+                else:
+                    bataille.joue((ligne+1, col))
+                    nb_coup += 1
+                    return self._cases_connexes(bataille, (ligne+1, col), nb_coup)
+
         return (grille_jeu, nb_coup)
 
     def jouer_heuristique(self, taille_grille: int) -> int:
@@ -116,8 +154,6 @@ class Joueur:
                     # on joue les cases connexes
                     grille.grille, coup_addi = self._cases_connexes(bataille, (ligne, col))
                     nb_coups += coup_addi + 1
-
-        self.score += 1
         return nb_coups
 
     def _init_bateaux_grilles(self, bateaux: list[int], taille_grille: int) -> Dict[int, np.ndarray]:
@@ -243,5 +279,5 @@ class Joueur:
 
 if __name__ == "__main__":
     joueur = Joueur("Joueur")
-    for i in range(50):
-        print(joueur.jouer_proba_simple(10))
+    for i in range(5):
+        print(joueur.jouer_heuristique(10))

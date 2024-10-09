@@ -28,9 +28,9 @@ def calc_proba(i, b, n):
 
 if __name__ == '__main__':
     # Deux courbes ensemble
-    data = pd.read_csv('data/data.csv', sep=',', header=None)
-    data2 = pd.read_csv('data/data2.csv', sep=',', header=None)
-    data3 = pd.read_csv('data/data3.csv', sep=',', header=None)
+    data = pd.read_csv("data/data.csv", sep=',', header=None)    #version aléa
+    data2 = pd.read_csv('data/data2.csv', sep=',', header=None)  #version heuristique
+    data3 = pd.read_csv('data/data3.csv', sep=',', header=None)  #version proba
 
     b, n = 17, 100
 
@@ -46,6 +46,7 @@ if __name__ == '__main__':
     ax.plot(nb_coups, proba_data3, 'g', label='Ver. proba simple (1000 jeux)')
 
     ax.set_xlim(17, 100)
+    ax.set_ylim(0, max(max(max(proba_data), max(proba_data2)), max(proba_data3)+0.01))
     ax.set_ylim(0, max(max(proba_data), max(proba_data2)))
 
     ax.set_title('Distribution de la variable aléatoire X')
